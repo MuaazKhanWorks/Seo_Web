@@ -1,0 +1,243 @@
+import React, { useEffect, useState } from 'react';
+import {
+  Box,
+  Button,
+  Grid,
+  Paper,
+  Stack,
+  Typography,
+  TextField,
+} from '@mui/material';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import MailOutlineIcon from '@mui/icons-material/MailOutline';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import './Other.css'
+
+const Others = () => {
+  const [search,setSearch] = useState('')
+
+  const [toggle, setToggle] = useState(true);
+  const [togg, setTogg] = useState(true);
+  const [allone, setAllone] = useState(true);
+  const [datas, setDatas] = useState(true);
+
+  const [users, setUsers] = useState([]);
+  const [second, setSecond] = useState([]);
+
+  const getUsers = async () => {
+    const response = await fetch('http://118.107.140.70:3010/api/packages/mobile-packages');
+    const data = await response.json();
+    setUsers(data.data);
+    setSecond(data.data);
+  };
+
+  useEffect(() => {
+    getUsers();
+  }, []);
+
+  const filts = (voice) => {
+    
+    const result = second.filter((curData) => {
+      return curData.category === voice;
+    });
+    setUsers(result);
+  };
+
+  const renderPackages = (packageList) => {
+    return (
+      <Grid container spacing={5}>
+        {packageList.filter((item) => {
+            return search.toLowerCase() === '' ? true : item.package_price.toLowerCase().includes(search.toLowerCase());
+          })
+        
+        .map((curElem) => (
+          <Grid key={curElem.id} item lg={4} md={4} sm={6} xs={12}>
+            <Paper style={{ width: '100%', height: '50vh', padding: '10px' }} elevation={10} className="paper">
+              <Stack direction={'column'}>
+                <Typography variant='body2'>{curElem.package_basis}</Typography>
+                <Typography variant='h6'>{curElem.title}</Typography>
+                <Stack direction={'row'} justifyContent={'space-around'}>
+                  <Stack direction={'column'}>
+                    <MailOutlineIcon fontSize='large' sx={{ marginTop: '40px' }} />
+                    <Typography variant='body1'>{curElem.sms_count}</Typography>
+                    <Typography variant='body2'>{curElem.validity}/Sms</Typography>
+                  </Stack>
+                  <Stack direction={'column'}>
+                    <AccessTimeIcon fontSize='large' sx={{ marginTop: '40px' }} />
+                    <Typography variant='body1' style={{ marginLeft: '8px' }}>07</Typography>
+                    <Typography variant='body2'>Validity</Typography>
+                  </Stack>
+                </Stack>
+                <Box>
+                  <Stack direction={'row'} sx={{ marginTop: '50px', color: 'green' }} justifyContent={'space-around'}>
+                    <Box>
+                      <Typography variant='body2'>Rs {curElem.package_price}/{curElem.package_basis}</Typography>
+                      <Typography variant='body1'>Consumer Price</Typography>
+                    </Box>
+                    <Button variant='contained' sx={{ borderRadius: '15px' }} color='success'>View Details</Button>
+                  </Stack>
+                </Box>
+              </Stack>
+            </Paper>
+          </Grid>
+        ))}
+      </Grid>
+    );
+  };
+
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({
+    title: '',
+    package_basis: '',
+    sms_count: '',
+    validity: '',
+    package_price: '',
+    category: '',
+  });
+
+  const handleFormSubmit = () => {
+    const newCard = { ...formData, id: Date.now() };
+    setUsers([...users, newCard]);
+    setFormData({});
+    setShowForm(false);
+  };
+
+  return (
+    <>
+      <Grid container>
+        <Grid item lg={1}></Grid>
+        <Grid item lg={10}>
+          <Typography variant='body1' sx={{ color: 'green', marginTop: '7px', display: 'flex' }}>
+            Mobile <NavigateNextIcon /> PrePaid_Packegs
+          </Typography>
+          <Typography variant='h4' sx={{ color: 'green', marginTop: '20px' }}>
+            Prepaid Packages
+          </Typography>
+          <br/>
+            {/* All buttons main div */}
+
+          <Stack direction={'column'} spacing={2}>
+            {showForm ? (
+              <div>
+                <Button variant='contained' color='success' onClick={() => setShowForm(false)} className='btn'>
+                  -
+                </Button>
+                <form onSubmit={handleFormSubmit}>
+                  <TextField
+                    label='Title'
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    required
+                  />
+                  <TextField
+                    label='Package Basis'
+                    value={formData.package_basis}
+                    onChange={(e) => setFormData({ ...formData, package_basis: e.target.value })}
+                    required
+                  />
+                  <TextField
+                    label='SMS Count'
+                    value={formData.sms_count}
+                    onChange={(e) => setFormData({ ...formData, sms_count: e.target.value })}
+                    required
+                  />
+                  <TextField
+                    label='Validity'
+                    value={formData.validity}
+                    onChange={(e) => setFormData({ ...formData, validity: e.target.value })}
+                    required
+                  />
+                  <TextField
+                    label='Package Price'
+                    value={formData.package_price}
+                    onChange={(e) => setFormData({ ...formData, package_price: e.target.value })}
+                    required
+                  />
+                  <TextField
+                    label='Category'
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    required
+                  />
+                  <br/><br/>
+                  <Button variant='contained' color='primary' type='submit'>
+                    Create Card
+                  </Button>
+                </form>
+              </div>
+            ) : (<Stack direction={'row'} spacing={1} alignItems={'center'}>
+              <Button variant='contained' color='success' onClick={() => setShowForm(true)} className='btn'>
+                + 
+              </Button>
+              <Typography>Create Custom Packegs</Typography>
+              </Stack>)}
+            {toggle ? (<Stack direction={'row'} spacing={1} alignItems={'center'}>
+              <Button variant='contained' color='success' onClick={() => {filts('voice');setToggle(false);}} className='btn'>
+                + 
+              </Button>
+              <Typography>Voice</Typography>
+            </Stack>) : (
+              <Box>
+                <Button variant='contained' color='success' onClick={() => setToggle(true)} className='btn'>
+                  -
+                </Button>
+                <br/><br/>
+                {renderPackages(users)}
+              </Box>
+            )}
+            {togg ? (<Stack direction={'row'} spacing={1} alignItems={'center'}>
+              <Button variant='contained' color='success' onClick={() => {filts('sms');setTogg(false);}} className='btn'>
+                + 
+              </Button>
+              <Typography> SMS</Typography>
+            </Stack>) : (
+              <Box>
+                <Button variant='contained' color='success' onClick={() => setTogg(true)} className='btn'>
+                  -
+                </Button>
+                <br/><br/>
+                {renderPackages(users)}
+              </Box>
+            )}
+            {allone ? (<Stack direction={'row'} spacing={1} alignItems={'center'}>
+              <Button variant='contained' color='success' onClick={() => setAllone(false)} className='btn'>
+                + 
+              </Button>
+              <Typography>All-In-One</Typography>
+            </Stack>) : (
+              <Box>
+                <Button variant='contained' color='success' onClick={() => setAllone(true)} className='btn'>
+                  -
+                </Button>
+                <br/><br/>
+                {renderPackages(second)}
+              </Box>
+            )}
+            {datas ? (<Stack direction={'row'} spacing={1} alignItems={'center'}>
+              <Button variant='contained' color='success' onClick={() => {filts('data');setDatas(false);}} className='btn'>
+                + 
+              </Button>
+              <Typography>Data</Typography>
+            </Stack>) : (
+              <Box>
+                <Button variant='contained' color='success' onClick={() => setDatas(true)} className='btn'>
+                  -
+                </Button>
+                <br/><br/>
+                {renderPackages(users)}
+              </Box>
+            )}
+            <input 
+            style={{height:'7vh',width:'25%' }}
+            type='search'
+            placeholder='Search Card By Price'
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          </Stack>
+        </Grid>
+      </Grid>
+    </>
+  );
+};
+
+export default Others;
